@@ -10,10 +10,10 @@ const DEFAULT_SHELF_COLOR = "blue"
 const DEFAULT_SHELF_TEXT_COLOR = "white"
 const DEFAULT_SHELF_DIVIDER_COLOR = "red"
 
-const TOTAL_SHELVES = LIBRARY.length
+const TOTAL_SHELVES = LIBRARY.size()
 const LONGEST_SHELF_LENGTH = Math.max(
     ...LIBRARY.map((x: RowInputI) => Math.max(x.left.length, x.right.length)))
- 
+
 interface Bounds {
     min: string;
     max: string;
@@ -41,7 +41,7 @@ function Shelf(s: ShelfI) {
 	  fill={s.left_color}
 	/>
 	<Rect
-	  x={s.x + s.width / 2}
+	  x={s.x}
           y={s.y}
           width={s.width / 2}
           height={s.height}
@@ -54,7 +54,7 @@ function Shelf(s: ShelfI) {
 	  text={"32423"}
 	/>
 	<Text
-	  fill={DEFAULT_SHELF_TEXT_COLOR}
+	  fill={s.right_color}
 	  x={s.x + (3 * (s.width/4))}
 	  y={s.y + (s.height/2)}
 	  text={"Other"}
@@ -82,8 +82,8 @@ interface RowI {
 }
 
 interface RowInputI {
-    left: Array<Array<string>>,
-    right: Array<Array<string>>
+    left: Array<Array<string>>;
+    right: Array<Array<string>>;
 }
 
 function boundify(a: Array<string>) {
@@ -110,18 +110,20 @@ function Row(r: RowInputI) {
 function App() {
   return (
       <Stage width={window.innerWidth} height={window.innerHeight}>
-    <Layer>
-      <Shelf
-        x={30}
-        y={30}
-        width={DEFAULT_SHELF_WIDTH}
-        height={DEFAULT_SHELF_HEIGHT}
-        left_bounds={boundify(["sdf", "ddd"])}
-        right_bounds={boundify(["dd", "sssa"])}
-        right_color="red"
-        left_color="blue"
-      />
-    </Layer>
+      <Layer>
+        <Rect
+          x={234}
+          y={50}
+          width={100}
+          height={100}
+          fill="red"
+        />
+	<Text 
+	  text= "seffeffe"
+	  x = {222}
+	  y = {80}
+	  />
+      </Layer>
     </Stage>
   );
 }
