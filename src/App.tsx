@@ -3,7 +3,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import { Stage, Layer, Rect, Text, Line, Group } from "react-konva";
 
-const LIBRARY = require("./map.json");
+const LIBRARY: Array<RowInputI> = require("./map.json");
 const DEFAULT_SHELF_WIDTH = 200;
 const DEFAULT_SHELF_HEIGHT = 50;
 const DEFAULT_SHELF_COLOR = "blue";
@@ -54,14 +54,14 @@ function Shelf(s: ShelfI) {
                 x={s.x + s.width / 4}
                 y={s.y + s.height / 2}
                 text={boundifystr(s.left_bounds)}
-		fontFamily={DEFAULT_FONT_FAMILY}
+                fontFamily={DEFAULT_FONT_FAMILY}
             />
             <Text
                 fill={DEFAULT_SHELF_TEXT_COLOR}
                 x={s.x + 3 * (s.width / 4)}
                 y={s.y + s.height / 2}
                 text={boundifystr(s.right_bounds)}
-		fontFamily={DEFAULT_FONT_FAMILY}
+                fontFamily={DEFAULT_FONT_FAMILY}
             />
             <Line
                 x={s.x + s.width / 2}
@@ -97,41 +97,43 @@ function boundifystr(b: Bounds | null) {
     return b ? b.min + "-" + b.max : "";
 }
 
-function Row(r: RowInputI, x: number) {
+interface P {
+    r: RowInputI;
+    x: number;
+}
+function Row(props: P) {
     const height = Math.floor(window.innerHeight / LONGEST_SHELF_LENGTH);
     const width = Math.floor(window.innerWidth / TOTAL_SHELVES);
+
     // assert(r.left.size == r.right.size);
-    return [...Array(r.left.length)].map((_, i) => (
-        <Shelf
-            x={x}
-            y={height * i}
-            width={width}
-            height={height}
-            left_bounds={boundify(r.left[i])}
-            right_bounds={boundify(r.right[i])}
-            left_color="green"
-            right_color="red"
-        />
-    ));
+    return (
+        <Group>
+            {[...Array(props.r.left.length)].map((_, i) => (
+                <Shelf
+                    x={props.x}
+                    y={height * i}
+                    width={DEFAULT_SHELF_WIDTH}
+                    height={height}
+                    left_bounds={boundify(props.r.left[i])}
+                    right_bounds={boundify(props.r.right[i])}
+                    left_color="green"
+                    right_color="red"
+                />
+            ))}
+        </Group>
+    );
 }
 
 function App() {
     return (
         <Stage width={window.innerWidth} height={window.innerHeight}>
             <Layer>
-                <Shelf
-                    x={30}
-                    y={30}
-                    width={DEFAULT_SHELF_WIDTH}
-                    height={DEFAULT_SHELF_HEIGHT}
-                    left_bounds={boundify(["sdf", "ddd"])}
-                    right_bounds={boundify(["dd", "sssa"])}
-                    right_color="red"
-                    left_color="blue"
-                />
+		{LIBRARY.map((row, i) => Row({r: row, x: ( 1.2 * DEFAULT_SHELF_WIDTH) * i}))}
             </Layer>
         </Stage>
     );
 }
 
 export default App;
+
+// return <Rect x={0} y={0} width={324} height={34} />
