@@ -2,6 +2,7 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { Stage, Layer, Rect, Text, Line, Group } from "react-konva";
+let lc = require("lc_call_number_compare");
 
 const LIBRARY: Array<RowInputI> = require("./map.json");
 const DEFAULT_SHELF_WIDTH = 200;
@@ -30,6 +31,10 @@ interface ShelfI {
     right_bounds: Bounds | null;
     left_color: string;
     right_color: string;
+}
+
+function betweenLC(b: Bounds, x: string) {
+    return lc.lte(x, b.max) && lc.gte(x, b.min)
 }
 
 function Shelf(s: ShelfI) {
@@ -101,6 +106,7 @@ interface P {
     r: RowInputI;
     x: number;
 }
+
 function Row(props: P) {
     const height = Math.floor(window.innerHeight / LONGEST_SHELF_LENGTH);
     const width = Math.floor(window.innerWidth / TOTAL_SHELVES);
@@ -125,6 +131,7 @@ function Row(props: P) {
 }
 
 function App() {
+    console.log(betweenLC({min: "QA1", max: "QC5"}, "QD1"))
     return (
         <Stage width={window.innerWidth} height={window.innerHeight}>
             <Layer>
