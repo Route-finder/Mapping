@@ -2,6 +2,7 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { Stage, Layer, Rect, Text, Line, Group } from "react-konva";
+import from 'typescript-collections';
 let lc = require("lc_call_number_compare");
 
 const LIBRARY: Array<RowInputI> = require("./map.json");
@@ -16,6 +17,7 @@ const TOTAL_SHELVES = LIBRARY.length;
 const LONGEST_SHELF_LENGTH = Math.max(
     ...LIBRARY.map((x: RowInputI) => Math.max(x.left.length, x.right.length))
 );
+
 
 interface Bounds {
     min: string;
@@ -80,15 +82,6 @@ function Shelf(s: ShelfI) {
     );
 }
 
-interface RowI {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    bounds: Bounds;
-    contents: Array<ShelfI>;
-}
-
 interface RowInputI {
     left: Array<Array<string>>;
     right: Array<Array<string>>;
@@ -111,7 +104,6 @@ function Row(props: P) {
     const height = Math.floor(window.innerHeight / LONGEST_SHELF_LENGTH);
     const width = Math.floor(window.innerWidth / TOTAL_SHELVES);
 
-    // assert(r.left.size == r.right.size);
     return (
         <Group>
             {[...Array(props.r.left.length)].map((_, i) => (
@@ -131,7 +123,6 @@ function Row(props: P) {
 }
 
 function App() {
-    console.log(betweenLC({min: "QA1", max: "QC5"}, "QD1"))
     return (
         <Stage width={window.innerWidth} height={window.innerHeight}>
             <Layer>
@@ -142,5 +133,3 @@ function App() {
 }
 
 export default App;
-
-// return <Rect x={0} y={0} width={324} height={34} />
