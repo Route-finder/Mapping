@@ -2,7 +2,6 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { Stage, Layer, Rect, Text, Line, Group } from "react-konva";
-import from 'typescript-collections';
 let lc = require("lc_call_number_compare");
 
 const LIBRARY: Array<RowInputI> = require("./map.json");
