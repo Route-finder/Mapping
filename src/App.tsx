@@ -2,8 +2,11 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { Stage, Layer, Rect, Text, Line, Group } from "react-konva";
-import { BSTree } from "typescript-collections";
 let lc = require("lc_call_number_compare");
+
+// This shouldn't be a constant, this should be read from
+// the database
+const BOOKS: Array<BookI> = require("./test_books.json");
 
 const LIBRARY: Array<RowInputI> = require("./map.json");
 const DEFAULT_SHELF_WIDTH = 200;
@@ -21,6 +24,11 @@ const LONGEST_SHELF_LENGTH = Math.max(
 interface Bounds {
     min: string;
     max: string;
+}
+
+interface BookI {
+    name: string,
+    section: string,
 }
 
 interface ShelfI {
@@ -86,10 +94,6 @@ interface RowInputI {
     right: Array<Bounds>;
 }
 
-function boundify(a: Array<string>) {
-    return { min: a[0], max: a[1] };
-}
-
 function boundifystr(b: Bounds | null) {
     return b ? b.min + "-" + b.max : "";
 }
@@ -121,19 +125,19 @@ function Row(props: P) {
     );
 }
 
+function book(section: string): Bounds {
+    return {"min": section, "max": section};
+}
+
 function App() {
     let comp_section = (x: Bounds, y: Bounds) => lc.cmp(x.min, y.min);
+    let v = LIBRARY.map((x) => x.left.concat(x.right))
+        .reduce((x, y) => x.concat(y), [])
+        .filter((x) => x.min !== "" && x.max !== "");
 
     return (
         <Stage width={window.innerWidth} height={window.innerHeight}>
             <Layer>
-                <Text
-                    fill={DEFAULT_SHELF_TEXT_COLOR}
-                    x={0}
-                    y={0}
-                    text={"234"}
-                    fontFamily={DEFAULT_FONT_FAMILY}
-                />
                 {LIBRARY.map((row, i) =>
                     Row({ r: row, x: 1.2 * DEFAULT_SHELF_WIDTH * i })
                 )}

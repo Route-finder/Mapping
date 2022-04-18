@@ -1,0 +1,10 @@
+[
+    { "name": "Grammar", "section": "QA76.6" },
+    { "name": "TAOCP", "section": "QA76.6" },
+    { "name": "Desert", "section": "QH102" },
+    { "name": "Hartshorne", "section": "QA276.3" },
+    { "name": "Ideals", "section": "QA564" },
+    { "name": "Geometry", "section": "QA515" },
+    { "name": "Harris", "section": "QA564" },
+    { "name": "Topology", "section": "QA614" }
+]
