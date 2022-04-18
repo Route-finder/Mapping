@@ -64,17 +64,21 @@ function Shelf(s: ShelfI) {
             />
             <Text
                 fill={DEFAULT_SHELF_TEXT_COLOR}
-                x={s.x + s.width / 4}
+                x={s.x}
                 y={s.y + s.height / 2}
+		width={s.width / 2}
                 text={boundify(s.left_bounds)}
                 fontFamily={DEFAULT_FONT_FAMILY}
+		align="center"
             />
             <Text
                 fill={DEFAULT_SHELF_TEXT_COLOR}
-                x={s.x + 3 * (s.width / 4)}
+                x={s.x + s.width / 2}
+		width={s.width / 2}
                 y={s.y + s.height / 2}
                 text={boundify(s.right_bounds)}
                 fontFamily={DEFAULT_FONT_FAMILY}
+		align="center"
             />
             <Line
                 x={s.x + s.width / 2}
