@@ -1,7 +1,6 @@
 import React from "react";
-import logo from "./logo.svg";
 import "./App.css";
-import { Stage, Layer, Rect, Text, Line, Group } from "react-konva";
+import { Arrow, Stage, Layer, Rect, Text, Line, Group } from "react-konva";
 let lc = require("lc_call_number_compare");
 
 // This shouldn't be a constant, this should be read from
@@ -10,13 +9,13 @@ const BOOKS: Array<BookI> = require("./test_books.json");
 
 const LIBRARY: Array<RowInputI> = require("./map.json");
 const DEFAULT_SHELF_WIDTH = 200;
-const DEFAULT_SHELF_HEIGHT = 50;
-const DEFAULT_SHELF_COLOR = "blue";
+const MINIMUM_SHELF_HEIGHT = 50;
 const DEFAULT_SHELF_TEXT_COLOR = "white";
-const DEFAULT_SHELF_DIVIDER_COLOR = "red";
 const DEFAULT_FONT_FAMILY = "monospace";
 
-const TOTAL_SHELVES = LIBRARY.length;
+const AISLE_HEIGHT = 40;
+const AISLE_WIDTH = 70;
+
 const LONGEST_SHELF_LENGTH = Math.max(
     ...LIBRARY.map((x: RowInputI) => Math.max(x.left.length, x.right.length))
 );
@@ -27,8 +26,8 @@ interface Bounds {
 }
 
 interface BookI {
-    name: string,
-    section: string,
+    name: string;
+    section: string;
 }
 
 interface ShelfI {
@@ -36,8 +35,8 @@ interface ShelfI {
     y: number;
     width: number;
     height: number;
-    left_bounds: Bounds | null;
-    right_bounds: Bounds | null;
+    left_bounds: Printable | null;
+    right_bounds: Printable | null;
     left_color: string;
     right_color: string;
 }
@@ -67,14 +66,14 @@ function Shelf(s: ShelfI) {
                 fill={DEFAULT_SHELF_TEXT_COLOR}
                 x={s.x + s.width / 4}
                 y={s.y + s.height / 2}
-                text={boundifystr(s.left_bounds)}
+                text={boundify(s.left_bounds)}
                 fontFamily={DEFAULT_FONT_FAMILY}
             />
             <Text
                 fill={DEFAULT_SHELF_TEXT_COLOR}
                 x={s.x + 3 * (s.width / 4)}
                 y={s.y + s.height / 2}
-                text={boundifystr(s.right_bounds)}
+                text={boundify(s.right_bounds)}
                 fontFamily={DEFAULT_FONT_FAMILY}
             />
             <Line
@@ -94,52 +93,81 @@ interface RowInputI {
     right: Array<Bounds>;
 }
 
-function boundifystr(b: Bounds | null) {
-    return b ? b.min + "-" + b.max : "";
+interface RowMappedI {
+    left: Array<Printable>;
+    right: Array<Printable>;
+}
+
+interface Printable {
+    bounds: Bounds;
+    count: number;
+}
+
+function boundify(b: Printable | null) {
+    return b ? b.bounds.min + "-" + b.bounds.max : "";
 }
 
 interface P {
-    r: RowInputI;
+    r: RowMappedI;
     x: number;
 }
 
 function Row(props: P) {
-    const height = Math.floor(window.innerHeight / LONGEST_SHELF_LENGTH);
-    const width = Math.floor(window.innerWidth / TOTAL_SHELVES);
+    const screen_based_height =
+        Math.floor(window.innerHeight / (LONGEST_SHELF_LENGTH + 1)) -
+        AISLE_HEIGHT;
+    const height =
+        screen_based_height < MINIMUM_SHELF_HEIGHT
+            ? MINIMUM_SHELF_HEIGHT
+            : screen_based_height;
 
     return (
         <Group>
             {[...Array(props.r.left.length)].map((_, i) => (
                 <Shelf
                     x={props.x}
-                    y={height * i}
+                    y={i * (height + AISLE_HEIGHT) + AISLE_HEIGHT}
                     width={DEFAULT_SHELF_WIDTH}
                     height={height}
                     left_bounds={props.r.left[i]}
                     right_bounds={props.r.right[i]}
-                    left_color="blue"
-                    right_color="red"
+                    left_color={props.r.left[i].count > 0 ? "pink" : "magenta"}
+                    right_color={
+                        props.r.right[i].count > 0 ? "pink" : "magenta"
+                    }
                 />
             ))}
         </Group>
     );
 }
 
-function book(section: string): Bounds {
-    return {"min": section, "max": section};
-}
-
 function App() {
-    let comp_section = (x: Bounds, y: Bounds) => lc.cmp(x.min, y.min);
-    let v = LIBRARY.map((x) => x.left.concat(x.right))
-        .reduce((x, y) => x.concat(y), [])
-        .filter((x) => x.min !== "" && x.max !== "");
+    let for_side = (side: Array<Bounds>) =>
+        side.map((shelf) => ({
+            bounds: shelf,
+            count: BOOKS.filter((book) => betweenLC(shelf, book.section))
+                .length,
+        }));
+    let with_counts = LIBRARY.map((row) => ({
+        left: for_side(row.left),
+        right: for_side(row.right),
+    }));
 
     return (
         <Stage width={window.innerWidth} height={window.innerHeight}>
             <Layer>
-                {LIBRARY.map((row, i) =>
-                    Row({ r: row, x: 1.2 * DEFAULT_SHELF_WIDTH * i })
+		<Arrow
+		    points={[0,0,500,500]}
+		    strokewidth={15}
+		    stroke="red"
+		/>
+                {with_counts.map((row, i) =>
+                    Row({
+                        r: row,
+                        x:
+                            AISLE_WIDTH +
+                            (AISLE_WIDTH + DEFAULT_SHELF_WIDTH) * i,
+                    })
                 )}
             </Layer>
         </Stage>
