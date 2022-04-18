@@ -2,6 +2,7 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { Stage, Layer, Rect, Text, Line, Group } from "react-konva";
+import { BSTree } from "typescript-collections";
 let lc = require("lc_call_number_compare");
 
 const LIBRARY: Array<RowInputI> = require("./map.json");
@@ -16,7 +17,6 @@ const TOTAL_SHELVES = LIBRARY.length;
 const LONGEST_SHELF_LENGTH = Math.max(
     ...LIBRARY.map((x: RowInputI) => Math.max(x.left.length, x.right.length))
 );
-
 
 interface Bounds {
     min: string;
@@ -35,7 +35,7 @@ interface ShelfI {
 }
 
 function betweenLC(b: Bounds, x: string) {
-    return lc.lte(x, b.max) && lc.gte(x, b.min)
+    return lc.lte(x, b.max) && lc.gte(x, b.min);
 }
 
 function Shelf(s: ShelfI) {
@@ -82,8 +82,8 @@ function Shelf(s: ShelfI) {
 }
 
 interface RowInputI {
-    left: Array<Array<string>>;
-    right: Array<Array<string>>;
+    left: Array<Bounds>;
+    right: Array<Bounds>;
 }
 
 function boundify(a: Array<string>) {
@@ -111,9 +111,9 @@ function Row(props: P) {
                     y={height * i}
                     width={DEFAULT_SHELF_WIDTH}
                     height={height}
-                    left_bounds={boundify(props.r.left[i])}
-                    right_bounds={boundify(props.r.right[i])}
-                    left_color="green"
+                    left_bounds={props.r.left[i]}
+                    right_bounds={props.r.right[i]}
+                    left_color="blue"
                     right_color="red"
                 />
             ))}
@@ -122,10 +122,21 @@ function Row(props: P) {
 }
 
 function App() {
+    let comp_section = (x: Bounds, y: Bounds) => lc.cmp(x.min, y.min);
+
     return (
         <Stage width={window.innerWidth} height={window.innerHeight}>
             <Layer>
-		{LIBRARY.map((row, i) => Row({r: row, x: ( 1.2 * DEFAULT_SHELF_WIDTH) * i}))}
+                <Text
+                    fill={DEFAULT_SHELF_TEXT_COLOR}
+                    x={0}
+                    y={0}
+                    text={"234"}
+                    fontFamily={DEFAULT_FONT_FAMILY}
+                />
+                {LIBRARY.map((row, i) =>
+                    Row({ r: row, x: 1.2 * DEFAULT_SHELF_WIDTH * i })
+                )}
             </Layer>
         </Stage>
     );
