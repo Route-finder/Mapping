@@ -97,6 +97,18 @@ function Shelf(s: ShelfI) {
     );
 }
 
+function Path(k: Array<LeftRight<Array<Printable>>>) {
+    const shelves_to_visit: Array<LeftRight<boolean>> = k.map((row) =>
+        lrmap(row, (side) => side.some((x) => x.count > 0))
+    );
+
+    const v = shelves_to_visit.map((shelf, i) => 
+	shelf.left ? 
+	 AISLE_WIDTH / 2 + (AISLE_WIDTH + DEFAULT_SHELF_WIDTH) * i 
+	 : null).filter(x => x);
+    console.log( v);
+}
+
 interface LeftRight<T> {
     readonly left: T;
     readonly right: T;
@@ -111,7 +123,7 @@ function boundify(b: Printable | null) {
     return b ? b.bounds.min + "-" + b.bounds.max : "";
 }
 
-function Row(props: { r: LeftRight<Array<Printable>>; x: number }) {
+function Row(r: LeftRight<Array<Printable>>, x: number) {
     const screen_based_height =
         Math.floor(window.innerHeight / (LONGEST_SHELF_LENGTH + 1)) -
         AISLE_HEIGHT;
@@ -122,62 +134,51 @@ function Row(props: { r: LeftRight<Array<Printable>>; x: number }) {
 
     return (
         <Group>
-            {[...Array(props.r.left.length)].map((_, i) => (
+            {[...Array(r.left.length)].map((_, i) => (
                 <Shelf
-                    x={props.x}
+                    x={x}
                     y={i * (height + AISLE_HEIGHT) + AISLE_HEIGHT}
                     width={DEFAULT_SHELF_WIDTH}
                     height={height}
-                    left_bounds={props.r.left[i]}
-                    right_bounds={props.r.right[i]}
-                    left_color={props.r.left[i].count > 0 ? "pink" : "magenta"}
-                    right_color={
-                        props.r.right[i].count > 0 ? "pink" : "magenta"
-                    }
+                    left_bounds={r.left[i]}
+                    right_bounds={r.right[i]}
+                    left_color={r.left[i].count > 0 ? "pink" : "magenta"}
+                    right_color={r.right[i].count > 0 ? "pink" : "magenta"}
                 />
             ))}
         </Group>
     );
 }
 
+function lrmap<T, U>(lr: LeftRight<T>, f: (a: T) => U) {
+    return {
+        left: f(lr.left),
+        right: f(lr.right),
+    };
+}
+
 function App() {
-    const for_side = (side: Array<Bounds>) =>
-        side.map((shelf) => ({
-            bounds: shelf,
-            count: BOOKS.filter((book) => betweenLC(shelf, book.section))
-                .length,
-        }));
-
     // The infered type doesn't use constants, so it needs to be written out
-    const with_counts: Array<LeftRight<Array<Printable>>> = LIBRARY.map(
-        (row) => ({
-            left: for_side(row.left),
-            right: for_side(row.right),
-        })
+    const with_counts: Array<LeftRight<Array<Printable>>> = LIBRARY.map((row) =>
+        lrmap(row, (side) =>
+            side.map((shelf) => ({
+                bounds: shelf,
+                count: BOOKS.filter((book) => betweenLC(shelf, book.section))
+                    .length,
+            }))
+        )
     );
-
-    const for_side2 = (side: Array<Printable>) => side.some((x) => x.count > 0);
-    const shelves_to_visit = with_counts.map((row) => ({
-        left: for_side2(row.left),
-        right: for_side2(row.right),
-    }));
 
     return (
         <Stage width={window.innerWidth} height={window.innerHeight}>
             <Layer>
-                <Arrow
-                    points={[0, 0, 500, 500]}
-                    strokewidth={15}
-                    stroke="red"
-                />
                 {with_counts.map((row, i) =>
-                    Row({
-                        r: row,
-                        x:
-                            AISLE_WIDTH +
-                            (AISLE_WIDTH + DEFAULT_SHELF_WIDTH) * i,
-                    })
+                    Row(
+                        row,
+                        AISLE_WIDTH + (AISLE_WIDTH + DEFAULT_SHELF_WIDTH) * i
+                    )
                 )}
+		{Path(with_counts)}
             </Layer>
         </Stage>
     );
