@@ -1,13 +1,16 @@
 import React from "react";
 import "./App.css";
 import { Arrow, Stage, Layer, Rect, Text, Line, Group } from "react-konva";
-let lc = require("lc_call_number_compare");
+const lc = require("lc_call_number_compare");
+
+// Make consts actually const
+type Array<T> = ReadonlyArray<T>;
 
 // This shouldn't be a constant, this should be read from
 // the database
 const BOOKS: Array<BookI> = require("./test_books.json");
 
-const LIBRARY: Array<RowInputI> = require("./map.json");
+const LIBRARY: Array<LeftRight<Array<Bounds>>> = require("./map.json");
 const DEFAULT_SHELF_WIDTH = 200;
 const MINIMUM_SHELF_HEIGHT = 50;
 const DEFAULT_SHELF_TEXT_COLOR = "white";
@@ -17,28 +20,30 @@ const AISLE_HEIGHT = 40;
 const AISLE_WIDTH = 70;
 
 const LONGEST_SHELF_LENGTH = Math.max(
-    ...LIBRARY.map((x: RowInputI) => Math.max(x.left.length, x.right.length))
+    ...LIBRARY.map((x: LeftRight<Array<Bounds>>) =>
+        Math.max(x.left.length, x.right.length)
+    )
 );
 
 interface Bounds {
-    min: string;
-    max: string;
+    readonly min: string;
+    readonly max: string;
 }
 
 interface BookI {
-    name: string;
-    section: string;
+    readonly name: string;
+    readonly section: string;
 }
 
 interface ShelfI {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    left_bounds: Printable | null;
-    right_bounds: Printable | null;
-    left_color: string;
-    right_color: string;
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+    readonly left_bounds: Printable | null;
+    readonly right_bounds: Printable | null;
+    readonly left_color: string;
+    readonly right_color: string;
 }
 
 function betweenLC(b: Bounds, x: string) {
@@ -66,19 +71,19 @@ function Shelf(s: ShelfI) {
                 fill={DEFAULT_SHELF_TEXT_COLOR}
                 x={s.x}
                 y={s.y + s.height / 2}
-		width={s.width / 2}
+                width={s.width / 2}
                 text={boundify(s.left_bounds)}
                 fontFamily={DEFAULT_FONT_FAMILY}
-		align="center"
+                align="center"
             />
             <Text
                 fill={DEFAULT_SHELF_TEXT_COLOR}
                 x={s.x + s.width / 2}
-		width={s.width / 2}
+                width={s.width / 2}
                 y={s.y + s.height / 2}
                 text={boundify(s.right_bounds)}
                 fontFamily={DEFAULT_FONT_FAMILY}
-		align="center"
+                align="center"
             />
             <Line
                 x={s.x + s.width / 2}
@@ -92,31 +97,21 @@ function Shelf(s: ShelfI) {
     );
 }
 
-interface RowInputI {
-    left: Array<Bounds>;
-    right: Array<Bounds>;
-}
-
-interface RowMappedI {
-    left: Array<Printable>;
-    right: Array<Printable>;
+interface LeftRight<T> {
+    readonly left: T;
+    readonly right: T;
 }
 
 interface Printable {
-    bounds: Bounds;
-    count: number;
+    readonly bounds: Bounds;
+    readonly count: number;
 }
 
 function boundify(b: Printable | null) {
     return b ? b.bounds.min + "-" + b.bounds.max : "";
 }
 
-interface P {
-    r: RowMappedI;
-    x: number;
-}
-
-function Row(props: P) {
+function Row(props: { r: LeftRight<Array<Printable>>; x: number }) {
     const screen_based_height =
         Math.floor(window.innerHeight / (LONGEST_SHELF_LENGTH + 1)) -
         AISLE_HEIGHT;
@@ -146,25 +141,35 @@ function Row(props: P) {
 }
 
 function App() {
-    let for_side = (side: Array<Bounds>) =>
+    const for_side = (side: Array<Bounds>) =>
         side.map((shelf) => ({
             bounds: shelf,
             count: BOOKS.filter((book) => betweenLC(shelf, book.section))
                 .length,
         }));
-    let with_counts = LIBRARY.map((row) => ({
-        left: for_side(row.left),
-        right: for_side(row.right),
+
+    // The infered type doesn't use constants, so it needs to be written out
+    const with_counts: Array<LeftRight<Array<Printable>>> = LIBRARY.map(
+        (row) => ({
+            left: for_side(row.left),
+            right: for_side(row.right),
+        })
+    );
+
+    const for_side2 = (side: Array<Printable>) => side.some((x) => x.count > 0);
+    const shelves_to_visit = with_counts.map((row) => ({
+        left: for_side2(row.left),
+        right: for_side2(row.right),
     }));
 
     return (
         <Stage width={window.innerWidth} height={window.innerHeight}>
             <Layer>
-		<Arrow
-		    points={[0,0,500,500]}
-		    strokewidth={15}
-		    stroke="red"
-		/>
+                <Arrow
+                    points={[0, 0, 500, 500]}
+                    strokewidth={15}
+                    stroke="red"
+                />
                 {with_counts.map((row, i) =>
                     Row({
                         r: row,
