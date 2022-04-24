@@ -1,5 +1,5 @@
 import React from "react";
-import "./App.css";
+import "./Map.css";
 import { Arrow, Stage, Layer, Rect, Text, Line, Group } from "react-konva";
 const lc = require("lc_call_number_compare");
 
@@ -157,7 +157,7 @@ function lrmap<T, U>(lr: LeftRight<T>, f: (a: T) => U) {
     };
 }
 
-function App() {
+function Map() {
     // The infered type doesn't use constants, so it needs to be written out
     const with_counts: Array<LeftRight<Array<Printable>>> = LIBRARY.map((row) =>
         lrmap(row, (side) =>
@@ -184,4 +184,4 @@ function App() {
     );
 }
 
-export default App;
+export default Map;
